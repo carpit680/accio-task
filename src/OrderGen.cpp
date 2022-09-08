@@ -6,7 +6,7 @@ OrderGen::OrderGen() : Node("order_gen_node") {
     startSimSub = this->create_subscription<std_msgs::msg::Bool>("/start_simulation", 100, std::bind(&OrderGen::startSimulation, this, _1));
     // declare parameters you want to use
     this->declare_parameter("numTotes");
-    this->declare_parameter("numOrders");
+    this->declare_parameter("numOrders"); // TODO : mkae this a fixed value instead of a parameter
     // use the parameters set from warehouse_params.yaml
     this->get_parameter("numTotes", numTotes);
     this->get_parameter("numOrders", numOrders);
