@@ -603,8 +603,7 @@ void spawn_graph_robots_totes_new(
         gz_y * (dest_node_num - 1.0);
     totes[(static_cast<int>(node_num) + totes.size(0) * 3) - 1] = rack_rows;
     totes[(static_cast<int>(node_num) + totes.size(0) * 4) - 1] = 0.707;
-    totes[(static_cast<int>(node_num) + totes.size(0) * 5) - 1] = 0.0;
-    totes[(static_cast<int>(node_num) + totes.size(0) * 6) - 1] = 0.0;
+    totes[(static_cast<int>(node_num) + toteReturnsize(0) * 6) - 1] = 0.0;
     totes[(static_cast<int>(node_num) + totes.size(0) * 7) - 1] = -0.707;
     totes[(static_cast<int>(node_num) + totes.size(0) * 8) - 1] = 0.0;
     totes[(static_cast<int>(node_num) + totes.size(0) * 9) - 1] = d;

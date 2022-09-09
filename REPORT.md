@@ -34,5 +34,4 @@ A ROS2 package that will contain nodes publishing:
 
 ## Difficulties:
 
-* Unfamiliarity to rclnodejs library
 * Understanding the working of given code
