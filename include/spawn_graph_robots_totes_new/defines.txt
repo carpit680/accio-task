@@ -1,1 +1,0 @@
-MODEL=spawn_graph_robots_totes_new
