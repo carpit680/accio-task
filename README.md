@@ -19,6 +19,7 @@
 * Uses **socket.io** to connect to the **React** hooks at the frontend.
 * Sets up an event listener to listen to `sim:start` events on button press and a ROS2 publisher using **rclnodejs** to publish to bool to `/start_simulation` topic.
 * Subscribes to `/robot`, `/orders_queued`, and `/orders_fulfilled` topics and sets up emitters for them all.
+* Assuming top-left corner of the map as the origin, map the length of the warehouse to the length of the map image and execute change in position and orientation of the robot using **CSS** `transform` property with a transition of low 0.3s.
 
 ### 3. React frontend
 
