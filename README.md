@@ -33,6 +33,12 @@
 2. Took me some time to understand the problem statement.
 3. I could only partially implement my plans due to the my current work schedule but I have given it my best.
 
+### Whats functional
+* OrderGen node
+* Bi-directional communication between ROS2 and Node.js via rclnodejs
+* Bi-directionl communication between Node.js and React via socket.io
+web interface UI with robot status, simulation start/stop button, server connection status, pending orders, and fulfilled orders 
+
 ---
 Thank you for such an interesting task! I had a good time doing it.
 > **NOTE:**  I think there might be a typo in Readme.md that suggests using `spawn_graph_robots_totes_dist()` which does not exist.
