@@ -4,20 +4,33 @@
 * Ros2 version: galactic-geochelone
 * rosbridge-server using ` sudo apt install ros-galactic-rosbridge-server `
 
+```bash
+#orderGenerator
+colcon build
+source install/setup.bash
+ros2 run accio_task OrderGenNode
+```
+
+```bash
+#spawner
+colcon build
+source install/setup.bash
+ros2 run accio_task_python spawn
+```
+
+It makes me sad to not even have launch files here.
 ## Node:
 
-* Node version: 16.10.0
-* rclnodejs version: 0.21.1
-
-**NOTE: Source ROS2 before installing react package dependencies**
+**NOTE: Build and source ROS2 before installing react package dependencies**
 
 ```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-# restart terminal
+#backend
+cd accio_web_interface
+npm start
 ```
+
 ```bash
-nvm install 16.10.0
-cd <path-to-app-directory>
-npm i
+#frontend
+cd accio_web_interface/client
 npm start
 ```
