@@ -126,7 +126,7 @@ class RobotPublisher(Node):
             self.msg.position.y += 5.0
             self.msg.position.z += 5.0
             self.counter += 1
-            if self.counter == 10:
+            if self.counter == 100:
                 self.msg.available = True
                 self.counter = 0
                 self.get_logger().info(
