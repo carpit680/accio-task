@@ -35,6 +35,7 @@ void OrderGen::orderGeneration() {
 
 void OrderGen::orderPublisher() {
     if (startSim) {
+        RCLCPP_INFO(this->get_logger(), "Starting simulation!");
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stopTime - startTime);
         accio_interfaces::msg::Order orders;
         if (first)
@@ -49,7 +50,7 @@ void OrderGen::orderPublisher() {
             orderList.erase(orderList.begin());
             first = false;
         }
-        else if (duration.count() >= 28 and !first) {
+        else if (duration.count() >= 5 and !first) {
             startTime = std::chrono::high_resolution_clock::now();
             if (!orderList.empty()) {
                 orders.orderid = orderList[0].orderId;

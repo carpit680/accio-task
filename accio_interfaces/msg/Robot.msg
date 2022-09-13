@@ -1,4 +1,4 @@
 accio_interfaces/Position position
-accio_interfaces/Orientation orientation
 float64 robot_id
 bool available
+int64 direction

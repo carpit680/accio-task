@@ -20,6 +20,8 @@ set(msg_files
   "msg/Robot.msg"
   "msg/Order.msg"
   "msg/Orders.msg"
+  "msg/OrdersFulfilled.msg"
+  "msg/RobotList.msg"
   )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
