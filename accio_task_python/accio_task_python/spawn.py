@@ -19,6 +19,7 @@ from accio_interfaces.msg import Robot  # pylint: disable=import-error
 from accio_interfaces.msg import Orders  # pylint: disable=import-error
 from accio_interfaces.msg import OrdersFulfilled  # pylint: disable=import-error
 from accio_interfaces.msg import RobotList  # pylint: disable=import-error
+import time
 
 lock = Lock()
 PENDING_ORDERS = []
@@ -300,19 +301,22 @@ class RobotPublisher(Node):
         None
         """
         if len(PENDING_ORDERS) > 0:
-            self.current_order = PENDING_ORDERS[0]
-            for tote in self.current_order.picklist:
-                for robot in graph["robots"]:
-                    if robot[list(robot.keys())[0]]["available"]:
-                        # self.get_logger().info(
-                        #     f'robot {self.msg.robot_list} is now handling {tote}')
-                        # self.move_to_tote(int(list(robot.keys())[0]), int(tote))
-                        PENDING_ORDERS.remove(self.current_order.picklist[int(tote)])
-                        break
+            # self.current_order = PENDING_ORDERS[0]
+            for current_order in PENDING_ORDERS:
+                for tote in current_order.picklist:
+                    time.sleep(1)
+                    for robot in graph["robots"]:
+                        
+                        if robot[list(robot.keys())[0]]["available"]:
+                            robot_id = list(robot.keys())[0]
+                            # self.move_to_tote(int(robot_id), int(tote))
+                            break
 
-            if self.current_order in PENDING_ORDERS:
-                FULFILLED_ORDERS.append(
-                    PENDING_ORDERS.pop(PENDING_ORDERS.index(self.current_order)).orderid)
+                    PENDING_ORDERS[PENDING_ORDERS.index(
+                        current_order)].picklist.remove(tote)
+                if current_order in PENDING_ORDERS:
+                    FULFILLED_ORDERS.append(
+                        PENDING_ORDERS.pop(PENDING_ORDERS.index(current_order)).orderid)
 
 
 class PendingOrderPublisher(Node):
@@ -425,12 +429,12 @@ def main(args=None):
     rclpy.init(args=args)
     try:
         order_handler = OrderHandler()
-        # robot_publisher = RobotPublisher()
+        robot_publisher = RobotPublisher()
         pending_order_publisher = PendingOrderPublisher()
         # fulfilled_order_publisher = FulfilledOrderPublisher()
         executor = MultiThreadedExecutor(num_threads=20)
         executor.add_node(order_handler)
-        # executor.add_node(robot_publisher)
+        executor.add_node(robot_publisher)
         executor.add_node(pending_order_publisher)
         # executor.add_node(fulfilled_order_publisher)
 
@@ -439,7 +443,7 @@ def main(args=None):
         finally:
             executor.shutdown()
             order_handler.destroy_node()
-            # robot_publisher.destroy_node()
+            robot_publisher.destroy_node()
             pending_order_publisher.destroy_node()
             # fulfilled_order_publisher.destroy_node()
     finally:

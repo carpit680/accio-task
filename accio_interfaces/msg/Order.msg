@@ -1,2 +1,2 @@
 float64 orderid
-int64[] picklist
+float64[] picklist
