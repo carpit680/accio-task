@@ -5,7 +5,7 @@ OrderGen::OrderGen() : Node("order_gen_node") {
     orderGenPub = this->create_publisher<accio_interfaces::msg::Order>("/order_list", 1);
     startSimSub = this->create_subscription<std_msgs::msg::Bool>("/start_simulation", 100, std::bind(&OrderGen::startSimulation, this, _1));
 
-    numTotes = 10;
+    numTotes = 6;
     numOrders = 3;
     rclcpp::sleep_for(1000000000ns);
     orderGeneration();
