@@ -198,7 +198,6 @@ class RobotPublisher(Node):
 
         robot = graph["robots"][robot_id]
         tote = graph["totes"][tote_id]
-        # print("1")
         self.msg.robot_id = float(robot_id)
         self.msg.available = False
         self.pub.publish(self.msg)
@@ -212,7 +211,6 @@ class RobotPublisher(Node):
         time.sleep(5)
 
         # move to station
-
         self.msg.position.x = graph["station"]["x"]
         self.pub.publish(self.msg)
         time.sleep(5)
@@ -230,7 +228,6 @@ class RobotPublisher(Node):
 
         self.msg.available = True
         self.pub.publish(self.msg)
-
 
     def move_tote_old(self, robot_id, tote_id):
         """
@@ -339,30 +336,33 @@ class RobotPublisher(Node):
         """
         # check if robot 0 is available
 
-        if graph["robots"][0][list(graph["robots"][0].keys())[0]]["available"]:
-            if len(PENDING_ORDERS) > 0:
-                # self.current_order = PENDING_ORDERS[0]
-                pending_order_copy = PENDING_ORDERS.copy()
-                for current_order in pending_order_copy:
-                    for tote in current_order.picklist:
-                        time.sleep(1)
-                        for robot in graph["robots"]:
+        # if graph["robots"][0][list(graph["robots"][0].keys())[0]]["available"]:
+        if len(PENDING_ORDERS) > 0:
+            # self.current_order = PENDING_ORDERS[0]
+            pending_order_copy = PENDING_ORDERS.copy()
+            for current_order in pending_order_copy:
+                for tote in current_order.picklist:
+                    time.sleep(1)
+                    for robot in graph["robots"]:
 
-                            if robot[list(robot.keys())[0]]["available"]:
-                                robot_id = list(robot.keys())[0]
-                                self.move_tote(int(robot_id), int(tote))
+                        if robot[list(robot.keys())[0]]["available"]:
+                            robot_id = list(robot.keys())[0]
 
-                                PENDING_ORDERS[PENDING_ORDERS.index(
-                                    current_order)].picklist.remove(tote)
-                                break
-                            else:
-                                time.sleep(1)
-                                continue
+                            # NOTE uncomment the line below to move robot to tote
+                            self.move_tote(int(robot_id), int(tote))
+                            time.sleep(5)
 
-                    # if len(PENDING_ORDERS[PENDING_ORDERS.index(
-                    #         current_order)].picklist) == 0:
-                    FULFILLED_ORDERS.append(current_order.orderid)
-                    PENDING_ORDERS.remove(current_order)
+                            PENDING_ORDERS[PENDING_ORDERS.index(
+                                current_order)].picklist.remove(tote)
+                            break
+                        else:
+                            time.sleep(1)
+                            continue
+
+                # if len(PENDING_ORDERS[PENDING_ORDERS.index(
+                #         current_order)].picklist) == 0:
+                FULFILLED_ORDERS.append(current_order.orderid)
+                PENDING_ORDERS.remove(current_order)
 
 
 class PendingOrderPublisher(Node):
@@ -407,7 +407,8 @@ class PendingOrderPublisher(Node):
             self.msg = Orders()
             for order in PENDING_ORDERS:
                 self.msg.orders.append(order)
-            print("inside pending callback")
+            self.get_logger().info(
+                f'Publishing pending orders list{self.msg}')
             self.pub.publish(self.msg)
 
 
@@ -448,6 +449,7 @@ class FulfilledOrderPublisher(Node):
         -------
         None
         """
+        # NOTE: use the commented line in prod
         if FULFILLED_ORDERS != self.prev_list and len(FULFILLED_ORDERS) > 0:
             self.prev_list = FULFILLED_ORDERS.copy()
             self.get_logger().info(

@@ -6,7 +6,7 @@ OrderGen::OrderGen() : Node("order_gen_node") {
     startSimSub = this->create_subscription<std_msgs::msg::Bool>("/start_simulation", 100, std::bind(&OrderGen::startSimulation, this, _1));
 
     numTotes = 10;
-    numOrders = 1;
+    numOrders = 3;
     rclcpp::sleep_for(1000000000ns);
     orderGeneration();
     timer_ = this->create_wall_timer(1s, std::bind(&OrderGen::orderPublisher, this));
