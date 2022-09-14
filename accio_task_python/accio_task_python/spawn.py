@@ -72,7 +72,7 @@ graph = {
         }},
     ],
     "robots": [
-        {1.0: {
+        {0.0: {
             "parkingX": 0.0,
             "parkingY": 0.0,
             "x": 0.0,
@@ -80,7 +80,7 @@ graph = {
             "available": True,
             "dir": 0.0,
         }},
-        {2.0: {
+        {1.0: {
             "parkingX": 0.0,
             "parkingY": 100.0,
             "x": 0.0,
@@ -88,7 +88,7 @@ graph = {
             "available": True,
             "dir": 0,
         }},
-        {3.0: {
+        {2.0: {
             "parkingX": 100.0,
             "parkingY": 0.0,
             "x": 100.0,
@@ -96,11 +96,19 @@ graph = {
             "available": True,
             "dir": 0,
         }},
-        {4.0: {
+        {3.0: {
             "parkingX": 100.0,
             "parkingY": 100.0,
             "x": 100.0,
             "y": 100.0,
+            "available": True,
+            "dir": 0,
+        }},
+        {4.0: {
+            "parkingX": 100.0,
+            "parkingY": 50.0,
+            "x": 100.0,
+            "y": 50.0,
             "available": True,
             "dir": 0,
         }}
@@ -154,7 +162,6 @@ class OrderHandler(Node):
         order.orderid = msg.orderid
         for tote in msg.picklist:
             order.picklist.append(int(tote))
-        # order.picklist = msg.picklist
         # lock.acquire()
         PENDING_ORDERS.append(order)
         print("inside order callback")
@@ -178,113 +185,143 @@ class RobotPublisher(Node):
 
     def __init__(self):
         super().__init__('robot_publisher')
-        self.pub = self.create_publisher(RobotList, 'robot', 10)
-        self.msg = RobotList()
-        self.reset_robots()
+        self.pub = self.create_publisher(Robot, 'robot', 10)
+        self.msg = Robot()
+        # self.reset_robots()
         self.current_order = Order()
         self.timer = self.create_timer(1.0, self.timer_callback)
 
-    def reset_robots(self):
-        """
-        setup_robots
-
-        ...
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-        """
-        for robot in graph["robots"]:
-            init = Robot()
-            init.robot_id = float(list(robot.keys())[0])
-            init.available = robot[list(robot.keys())[0]]["available"]
-            init.position.x = robot[list(robot.keys())[0]]["x"]
-            init.position.y = robot[list(robot.keys())[0]]["x"]
-            # init.direction = int(robot[init.robot_id]["dir"])
-            self.msg.robot_list.append(init)
-
-    def move_to_tote(self, robot_id, tote_id):
+    def move_tote(self, robot_id, tote_id):
         """
         move robot to tote location and then move it to station
         """
 
         robot = graph["robots"][robot_id]
         tote = graph["totes"][tote_id]
-        for item in self.msg.robot_list:
-            if int(item.robot_id) == robot_id:
+        # print("1")
+        self.msg.robot_id = float(robot_id)
+        self.msg.available = False
+        self.pub.publish(self.msg)
 
-                item.position.x = robot[list(robot.keys())[0]]["x"]
-                item.position.y = robot[list(robot.keys())[0]]["y"]
-                item.available = False
-                robot["available"] = False
+        # move to tote
+        self.msg.position.x = tote[list(tote.keys())[0]]["x"]
+        self.pub.publish(self.msg)
+        time.sleep(5)
+        self.msg.position.y = tote[list(tote.keys())[0]]["y"]
+        self.pub.publish(self.msg)
+        time.sleep(5)
 
-                # self.msg.robot_id = robot_i
-                stepsx = (tote[list(tote.keys())[0]]["x"] -
-                          robot[list(robot.keys())[0]]["x"]) / graph["robot_speed"]
-                stepsy = (tote[list(tote.keys())[0]]["y"] -
-                          robot[list(robot.keys())[0]]["y"]) / graph["robot_speed"]
-                # self.get_logger().info(f'Robot {robot_id} moving to tote {tote_id}')
-                for i in range(int(stepsx)):
-                    item.position.x += int(graph["robot_speed"])
-                    self.msg.robot_list[robot_id] = item
-                    self.pub.publish(self.msg)
-                    # self.get_logger().info(
-                    #     f'moving {robot_id}to x: {item.position.x}')
-                for i in range(int(stepsy)):
-                    item.position.y += int(graph["robot_speed"])
-                    self.msg.robot_list[robot_id] = item
-                    self.pub.publish(self.msg)
-                    # self.get_logger().info(
-                    #     f'moving {robot}to y: {item.position.y}')
-                # self.get_logger().info(f'Robot {robot_id} moving to station')
-                stepsx = (
-                    graph["station"]["x"] - tote[list(tote.keys())[0]]["x"]) // graph["robot_speed"]
-                stepsy = (
-                    graph["station"]["y"] - tote[list(tote.keys())[0]]["y"]) // graph["robot_speed"]
-                for i in range(stepsx):
-                    item.position.x += int(graph["robot_speed"])
-                    self.msg.robot_list[robot_id] = item
-                    self.pub.publish(self.msg)
-                    # self.get_logger().info(
-                    #     f'moving {robot}to x: {item.position.x}')
-                for i in range(stepsy):
-                    item.position.y += int(graph["robot_speed"])
-                    self.msg.robot_list[robot_id] = item
-                    self.pub.publish(self.msg)
-                    # self.get_logger().info(
-                    #     f'moving {robot}to y: {item.position.y}')
-                # move robot back to parking spot
-                # self.get_logger().info(f'Robot {robot_id} moving to parking spot')
-                stepsx = (robot[list(robot.keys())[0]]["parkinX"] - graph["station"]
-                        ["x"]) // graph["robot_speed"]
-                stepsy = (robot[list(robot.keys())[0]]["parkingY"] - graph["station"]
-                        ["y"]) // graph["robot_speed"]
-                for i in range(stepsx):
-                    item.position.x += int(graph["robot_speed"])
-                    self.msg.robot_list[robot_id] = item
-                    self.pub.publish(self.msg)
-                    # self.get_logger().info(
-                    #     f'moving {robot}to x: {item.position.x}')
-                for i in range(stepsy):
-                    item.position.y += int(graph["robot_speed"])
-                    self.msg.robot_list[robot_id] = item
-                    self.pub.publish(self.msg)
-                    # self.get_logger().info(
-                    #     f'moving {robot}to y: {item.position.y}')
+        # move to station
 
-                item.available = True
-                robot["available"] = True
-                item.position.x = robot[list(robot.keys())[
-                    0]]["parkingX"]
-                item.position.y = robot[list(robot.keys())[
-                    0]]["parkingY"]
-                self.msg.robot_list[robot_id] = item
-                self.pub.publish(self.msg)
-                return
+        self.msg.position.x = graph["station"]["x"]
+        self.pub.publish(self.msg)
+        time.sleep(5)
+        self.msg.position.y = graph["station"]["y"]
+        self.pub.publish(self.msg)
+        time.sleep(5)
+
+        # move to parking
+        self.msg.position.x = robot[list(robot.keys())[0]]["parkingX"]
+        self.pub.publish(self.msg)
+        time.sleep(5)
+        self.msg.position.y = robot[list(robot.keys())[0]]["parkingY"]
+        self.pub.publish(self.msg)
+        time.sleep(5)
+
+        self.msg.available = True
+        self.pub.publish(self.msg)
+
+
+    def move_tote_old(self, robot_id, tote_id):
+        """
+        move robot to tote location and then move it to station
+        """
+
+        robot = graph["robots"][robot_id]
+        tote = graph["totes"][tote_id]
+        # print("1")
+        self.msg.robot_id = float(robot_id)
+        self.msg.available = False
+        self.pub.publish(self.msg)
+        # print("2")
+
+        stepsx = (tote[list(tote.keys())[0]]["x"] -
+                  robot[list(robot.keys())[0]]["x"]) // graph["robot_speed"]
+        stepsy = (tote[list(tote.keys())[0]]["y"] -
+                  robot[list(robot.keys())[0]]["y"]) // graph["robot_speed"]
+        # print("3")
+        for i in range(int(abs(stepsx))):
+            self.msg.position.x = robot[list(robot.keys())[0]]["x"]
+            if stepsx > 0:
+                self.msg.position.x += int(graph["robot_speed"])
+            else:
+                self.msg.position.x -= int(graph["robot_speed"])
+            time.sleep(.5)
+            self.pub.publish(self.msg)
+        # print("4")
+
+        for i in range(int(abs(stepsy))):
+            self.msg.position.y = robot[list(robot.keys())[0]]["y"]
+            if stepsx > 0:
+                self.msg.position.y += int(graph["robot_speed"])
+            else:
+                self.msg.position.y -= int(graph["robot_speed"])
+            time.sleep(.5)
+            self.pub.publish(self.msg)
+        # print("5")
+
+        stepsx = (graph["station"]["x"] - tote[list(tote.keys())[0]]["x"]) // graph["robot_speed"]
+        stepsy = (graph["station"]["y"] - tote[list(tote.keys())[0]]["y"]) // graph["robot_speed"]
+        # print("6")
+
+        for i in range(int(abs(stepsx))):
+            self.msg.position.x = robot[list(robot.keys())[0]]["x"]
+            if stepsx > 0:
+                self.msg.position.x += int(graph["robot_speed"])
+            else:
+                self.msg.position.x -= int(graph["robot_speed"])
+            time.sleep(.5)
+            self.pub.publish(self.msg)
+        # print("7")
+
+        for i in range(int(abs(stepsy))):
+            self.msg.position.y = robot[list(robot.keys())[0]]["y"]
+            if stepsx > 0:
+                self.msg.position.y += int(graph["robot_speed"])
+            else:
+                self.msg.position.y -= int(graph["robot_speed"])
+            time.sleep(.5)
+            self.pub.publish(self.msg)
+        # print("8")
+
+        stepsx = (robot[list(robot.keys())[0]]["parkingX"] - graph["station"]
+                ["x"]) // graph["robot_speed"]
+        stepsy = (robot[list(robot.keys())[0]]["parkingY"] - graph["station"]
+                ["y"]) // graph["robot_speed"]
+        # print("9")
+
+        for i in range(int(abs(stepsx))):
+            self.msg.position.x = robot[list(robot.keys())[0]]["x"]
+            if stepsx > 0:
+                self.msg.position.x += int(graph["robot_speed"])
+            else:
+                self.msg.position.x -= int(graph["robot_speed"])
+            time.sleep(.5)
+            self.pub.publish(self.msg)
+        # print("10")
+
+        for i in range(int(abs(stepsy))):
+            self.msg.position.y = robot[list(robot.keys())[0]]["y"]
+            if stepsx > 0:
+                self.msg.position.y += int(graph["robot_speed"])
+            else:
+                self.msg.position.y -= int(graph["robot_speed"])
+            time.sleep(.5)
+            self.pub.publish(self.msg)
+        # print("11")
+
+        self.msg.available = True
+        self.pub.publish(self.msg)
 
     def timer_callback(self):
         """
@@ -300,23 +337,32 @@ class RobotPublisher(Node):
         -------
         None
         """
-        if len(PENDING_ORDERS) > 0:
-            # self.current_order = PENDING_ORDERS[0]
-            for current_order in PENDING_ORDERS:
-                for tote in current_order.picklist:
-                    time.sleep(1)
-                    for robot in graph["robots"]:
-                        
-                        if robot[list(robot.keys())[0]]["available"]:
-                            robot_id = list(robot.keys())[0]
-                            # self.move_to_tote(int(robot_id), int(tote))
-                            break
+        # check if robot 0 is available
 
-                    PENDING_ORDERS[PENDING_ORDERS.index(
-                        current_order)].picklist.remove(tote)
-                if current_order in PENDING_ORDERS:
-                    FULFILLED_ORDERS.append(
-                        PENDING_ORDERS.pop(PENDING_ORDERS.index(current_order)).orderid)
+        if graph["robots"][0][list(graph["robots"][0].keys())[0]]["available"]:
+            if len(PENDING_ORDERS) > 0:
+                # self.current_order = PENDING_ORDERS[0]
+                pending_order_copy = PENDING_ORDERS.copy()
+                for current_order in pending_order_copy:
+                    for tote in current_order.picklist:
+                        time.sleep(1)
+                        for robot in graph["robots"]:
+
+                            if robot[list(robot.keys())[0]]["available"]:
+                                robot_id = list(robot.keys())[0]
+                                self.move_tote(int(robot_id), int(tote))
+
+                                PENDING_ORDERS[PENDING_ORDERS.index(
+                                    current_order)].picklist.remove(tote)
+                                break
+                            else:
+                                time.sleep(1)
+                                continue
+
+                    # if len(PENDING_ORDERS[PENDING_ORDERS.index(
+                    #         current_order)].picklist) == 0:
+                    FULFILLED_ORDERS.append(current_order.orderid)
+                    PENDING_ORDERS.remove(current_order)
 
 
 class PendingOrderPublisher(Node):
@@ -431,12 +477,12 @@ def main(args=None):
         order_handler = OrderHandler()
         robot_publisher = RobotPublisher()
         pending_order_publisher = PendingOrderPublisher()
-        # fulfilled_order_publisher = FulfilledOrderPublisher()
+        fulfilled_order_publisher = FulfilledOrderPublisher()
         executor = MultiThreadedExecutor(num_threads=20)
         executor.add_node(order_handler)
         executor.add_node(robot_publisher)
         executor.add_node(pending_order_publisher)
-        # executor.add_node(fulfilled_order_publisher)
+        executor.add_node(fulfilled_order_publisher)
 
         try:
             executor.spin()
@@ -445,7 +491,7 @@ def main(args=None):
             order_handler.destroy_node()
             robot_publisher.destroy_node()
             pending_order_publisher.destroy_node()
-            # fulfilled_order_publisher.destroy_node()
+            fulfilled_order_publisher.destroy_node()
     finally:
         rclpy.shutdown()
 

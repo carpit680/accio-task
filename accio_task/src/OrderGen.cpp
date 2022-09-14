@@ -6,7 +6,7 @@ OrderGen::OrderGen() : Node("order_gen_node") {
     startSimSub = this->create_subscription<std_msgs::msg::Bool>("/start_simulation", 100, std::bind(&OrderGen::startSimulation, this, _1));
 
     numTotes = 10;
-    numOrders = 10;
+    numOrders = 1;
     rclcpp::sleep_for(1000000000ns);
     orderGeneration();
     timer_ = this->create_wall_timer(1s, std::bind(&OrderGen::orderPublisher, this));
@@ -35,11 +35,12 @@ void OrderGen::orderGeneration() {
 
 void OrderGen::orderPublisher() {
     if (startSim) {
-        RCLCPP_INFO(this->get_logger(), "Starting simulation!");
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stopTime - startTime);
         accio_interfaces::msg::Order orders;
         if (first)
         {
+            RCLCPP_INFO(this->get_logger(), "Starting simulation!");
+
             startTime = std::chrono::high_resolution_clock::now();
             orders.orderid = orderList[0].orderId;
             for (auto &i : orderList[0].pickList)
